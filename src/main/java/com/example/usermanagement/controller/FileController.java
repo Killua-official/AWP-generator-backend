@@ -9,9 +9,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.util.UriEncoder;
 
-import java.io.FileInputStream;
+
+
 import java.io.IOException;
 import java.util.List;
 
@@ -22,6 +22,15 @@ import java.util.List;
 public class FileController {
 
     private final FileService fileService;
+
+    @GetMapping("/download")
+    public ResponseEntity<InputStreamResource> downloadFile(@RequestParam String fileName) throws IOException {
+        var result = fileService.download(fileName);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + result.getName())
+                .contentLength(result.getSize())
+                .body(result.getResource());
+    }
 
     @PostMapping("/upload")
     public String handleFileUpload(@RequestParam("file") MultipartFile file) {

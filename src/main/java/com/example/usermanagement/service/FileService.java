@@ -1,5 +1,7 @@
 package com.example.usermanagement.service;
 
+import com.example.usermanagement.model.FileData;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,5 +36,14 @@ public class FileService {
             directory.mkdirs();
         }
         file.transferTo(new File(uploadDir + File.separator + file.getOriginalFilename()));
+    }
+
+    public FileData download(String fileName) throws FileNotFoundException {
+        File file = new File(DIR + fileName);
+        return FileData.builder()
+                .resource(new InputStreamResource(new FileInputStream(file)))
+                .size(file.length())
+                .name(file.getName())
+                .build();
     }
 }
