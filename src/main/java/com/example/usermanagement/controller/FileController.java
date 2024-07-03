@@ -9,9 +9,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.yaml.snakeyaml.util.UriEncoder;
 
-
-
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
@@ -22,6 +22,21 @@ import java.util.List;
 public class FileController {
 
     private final FileService fileService;
+
+    @GetMapping("/download-report")
+    public ResponseEntity<InputStreamResource> downloadAWPFile(@RequestParam String fileName) {
+        try {
+            var data = fileService.downloadReport(fileName);
+            ResponseEntity<InputStreamResource> response = ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + UriEncoder.encode(data.getName()))
+                    .contentLength(data.length())
+                    .body(new InputStreamResource(new FileInputStream(data)));
+            return response;
+        } catch (IOException e) {
+            log.error(e.getMessage(), e);
+        }
+        return ResponseEntity.notFound().build();
+    }
 
     @GetMapping("/download")
     public ResponseEntity<InputStreamResource> downloadFile(@RequestParam String fileName) throws IOException {
