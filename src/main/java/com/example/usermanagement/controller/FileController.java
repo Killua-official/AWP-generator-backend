@@ -24,9 +24,9 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping("/download-report")
-    public ResponseEntity<InputStreamResource> downloadAWPFile(@RequestParam String fileName) {
+    public ResponseEntity<InputStreamResource> downloadAWPFile(@RequestParam String fileName, @RequestParam Double salary) {
         try {
-            var data = fileService.downloadReport(fileName);
+            var data = fileService.downloadReport(fileName, salary);
             ResponseEntity<InputStreamResource> response = ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + UriEncoder.encode(data.getName()))
                     .contentLength(data.length())
