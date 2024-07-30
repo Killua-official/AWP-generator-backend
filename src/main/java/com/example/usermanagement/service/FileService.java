@@ -26,7 +26,7 @@ import java.util.UUID;
 public class FileService {
 
     private static final String DIR = "D:" + File.separator + "temp" + File.separator;
-    private static final String TEMPLATE_PATH = "G:\\documents\\margulan\\work\\dbt\\report\\2024\\Шаблон.xls";
+    private static final String TEMPLATE_PATH = "template.xls";
 
     public List<String> get() {
         File folder = new File(DIR);
@@ -71,7 +71,7 @@ public class FileService {
 
         List<RedmineRow> allData = new ArrayList<>();
         try (CSVReader reader = new CSVReaderBuilder(new FileReader(csvFilePath)).build();
-             FileInputStream templateInputStream = new FileInputStream(TEMPLATE_PATH);
+             InputStream templateInputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(TEMPLATE_PATH);
              Workbook workbook = new HSSFWorkbook(templateInputStream)) {
 
             var data = reader.readAll();
