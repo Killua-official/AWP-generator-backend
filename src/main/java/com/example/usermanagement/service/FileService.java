@@ -2,6 +2,7 @@ package com.example.usermanagement.service;
 
 import com.example.usermanagement.model.FileData;
 import com.example.usermanagement.model.RedmineRow;
+import org.apache.commons.lang3.time.DateUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -14,7 +15,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.sql.Date;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,7 +26,7 @@ import java.util.UUID;
 public class FileService {
 
     private static final String DIR = "D:" + File.separator + "temp" + File.separator;
-    private static final String TEMPLATE_PATH = "D:\\AWP template\\AWP template.xls";
+    private static final String TEMPLATE_PATH = "template.xls";
 
     public List<String> get() {
         File folder = new File(DIR);
@@ -67,7 +71,7 @@ public class FileService {
 
         List<RedmineRow> allData = new ArrayList<>();
         try (CSVReader reader = new CSVReaderBuilder(new FileReader(csvFilePath)).build();
-             FileInputStream templateInputStream = new FileInputStream(TEMPLATE_PATH);
+             InputStream templateInputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(TEMPLATE_PATH);
              Workbook workbook = new HSSFWorkbook(templateInputStream)) {
 
             var data = reader.readAll();
@@ -93,6 +97,13 @@ public class FileService {
                 row.setTaskID(getNumberAfterHash(cols[7]));
                 allData.add(row);
             }
+            allData.sort(Comparator.comparing(row -> {
+                try {
+                    return DateUtils.parseDate(row.getDate(), "dd.MM.yyyy");
+                } catch (ParseException e) {
+                    throw new RuntimeException(e);
+                }
+            }));
 
             Sheet sheet = workbook.getSheetAt(0);
             int number = 1;
@@ -120,7 +131,7 @@ public class FileService {
                             number++;
                         }
                         if (i == 15) { // Assuming column 1 is for the merged date
-                            cell.setCellValue(rowData.getDate() + " - " + rowData.getCreationDate());
+                            cell.setCellValue(rowData.getDate());
                         }
                         if (i == 2) { // Assuming column 2 is for the comment
                             cell.setCellValue(rowData.getComment()+ " (#" + rowData.getTaskID() + ")");
