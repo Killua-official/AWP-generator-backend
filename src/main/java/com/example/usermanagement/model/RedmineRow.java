@@ -9,5 +9,6 @@ public class RedmineRow {
     private String date;
     private String creationDate;
     private Double count;
+    private Integer taskID;
 
 }
