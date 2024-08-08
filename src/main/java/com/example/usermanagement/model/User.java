@@ -23,7 +23,7 @@ public class User {
     private Long id;
 
     @NotBlank(message = "Name is mandatory")
-    private String name;
+    private String username;
 
     @NotBlank(message = "Email is mandatory")
     @Email(message = "Email should be valid")
@@ -31,5 +31,6 @@ public class User {
 
     @NotBlank(message = "Password is mandatory")
     private String password;
+
 }
 
