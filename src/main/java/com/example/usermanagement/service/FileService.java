@@ -28,8 +28,8 @@ public class FileService {
     private static final String DIR = "D:" + File.separator + "temp" + File.separator;
     private static final String TEMPLATE_PATH = "template.xls";
 
-    public List<String> get() {
-        File folder = new File(DIR);
+    public List<String> get(String username) {
+        File folder = new File(DIR + username + File.separator);
         File[] listOfFiles = folder.listFiles();
         List<String> fileNames = new ArrayList<>();
 
@@ -43,8 +43,8 @@ public class FileService {
         return fileNames;
     }
 
-    public void upload(MultipartFile file) throws IOException {
-        String uploadDir = DIR;
+    public void upload(MultipartFile file, String username) throws IOException {
+        String uploadDir = DIR + username + File.separator;
         File directory = new File(uploadDir);
         if (!directory.exists()) {
             directory.mkdirs();
@@ -52,8 +52,8 @@ public class FileService {
         file.transferTo(new File(uploadDir + File.separator + file.getOriginalFilename()));
     }
 
-    public FileData download(String fileName) throws FileNotFoundException {
-        File file = new File(DIR + fileName);
+    public FileData download(String fileName, String username) throws FileNotFoundException {
+        File file = new File(DIR +username + File.separator + fileName);
         return FileData.builder()
                 .resource(new InputStreamResource(new FileInputStream(file)))
                 .size(file.length())
@@ -61,8 +61,8 @@ public class FileService {
                 .build();
     }
 
-    public File downloadReport(String fileName, Double salary) throws IOException {
-        String csvFilePath = DIR + fileName;
+    public File downloadReport(String fileName, Double salary, String username, String iin, String docNumber, String contactNumber) throws IOException {
+        String csvFilePath = DIR + username + File.separator + fileName;
         String xlsxFilePath = File.createTempFile(String.valueOf(UUID.randomUUID()), "-АWР.xls").getAbsolutePath();
         var existedFile = new File(xlsxFilePath);
         if (existedFile.exists()) {
@@ -90,8 +90,7 @@ public class FileService {
                 try {
                     row.setCount(Double.valueOf(cols[13]));
                 } catch (NumberFormatException e) {
-                    // Handle the error as appropriate
-                    row.setCount(0.0); // or any default value
+                    row.setCount(0.0);
                     System.err.println("Invalid number format for count: " + cols[13]);
                 }
                 row.setTaskID(getNumberAfterHash(cols[7]));
@@ -109,6 +108,11 @@ public class FileService {
             int number = 1;
             int startRow = 19;
             Row templateRow = sheet.getRow(19);
+
+            setCellValue(sheet, 10, 42, iin);
+            setCellValue(sheet, 12, 5, contactNumber);
+            setCellValue(sheet, 14, 33, docNumber);
+            setCellValue(sheet, 14, 38, allData.get(allData.size() - 1).getDate());
 
 
             for (var rowData : allData) {
@@ -153,9 +157,6 @@ public class FileService {
                 }
 
                 excelRow.setHeightInPoints(templateRow.getHeightInPoints());
-
-
-
                 startRow += 1; // Move to the next pair of rows
             }
             Row excelRow = sheet.getRow(startRow);
@@ -179,25 +180,34 @@ public class FileService {
         return new File(xlsxFilePath);
     }
 
+    private void setCellValue(Sheet sheet, int rowNumber, int cellNumber, String value) {
+        Row row = sheet.getRow(rowNumber);
+        if (row == null) {
+            row = sheet.createRow(rowNumber);
+        }
+        Cell cell = row.getCell(cellNumber);
+        if (cell == null) {
+            cell = row.createCell(cellNumber);
+        }
+        cell.setCellValue(value);
+    }
+
     private static void copyRow(HSSFWorkbook workbook, HSSFSheet worksheet, int sourceRowNum, int destinationRowNum) {
-        // Get the source / new row
         HSSFRow newRow = worksheet.getRow(destinationRowNum);
         HSSFRow sourceRow = worksheet.getRow(sourceRowNum);
 
-        // If the row exist in destination, push down all rows by 1 else create a new row
+
         if (newRow != null) {
             worksheet.shiftRows(destinationRowNum, worksheet.getLastRowNum(), 1);
         } else {
             newRow = worksheet.createRow(destinationRowNum);
         }
 
-        // Loop through source columns to add to new row
         for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
-            // Grab a copy of the old/new cell
             HSSFCell oldCell = sourceRow.getCell(i);
             HSSFCell newCell = newRow.createCell(i);
 
-            // If the old cell is null jump to next cell
+
             if (oldCell == null) {
                 newCell = null;
                 continue;
