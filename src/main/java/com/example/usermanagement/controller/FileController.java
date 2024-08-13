@@ -26,11 +26,11 @@ public class FileController {
     private final FileService fileService;
 
     @GetMapping("/download-report")
-    public ResponseEntity<InputStreamResource> downloadAWPFile(@RequestParam String fileName, @RequestParam Double salary, HttpServletRequest request, @RequestParam String iin, @RequestParam String docNumber, @RequestParam String contractNumber) {
+    public ResponseEntity<InputStreamResource> downloadAWPFile(@RequestParam String fileName, @RequestParam Double salary, HttpServletRequest request, @RequestParam String iin, @RequestParam String docNumber, @RequestParam String contractNumber, @RequestParam String performer) {
         Principal principal = request.getUserPrincipal();
         String username = principal.getName();
         try {
-            var data = fileService.downloadReport(fileName, salary, username, iin, docNumber, contractNumber);
+            var data = fileService.downloadReport(fileName, salary, username, iin, docNumber, contractNumber, performer);
             ResponseEntity<InputStreamResource> response = ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + UriEncoder.encode(data.getName()))
                     .contentLength(data.length())
