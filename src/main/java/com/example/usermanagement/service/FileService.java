@@ -61,7 +61,7 @@ public class FileService {
                 .build();
     }
 
-    public File downloadReport(String fileName, Double salary, String username, String iin, String docNumber, String contactNumber) throws IOException {
+    public File downloadReport(String fileName, Double salary, String username, String iin, String docNumber, String contactNumber, String performer) throws IOException {
         String csvFilePath = DIR + username + File.separator + fileName;
         String xlsxFilePath = File.createTempFile(String.valueOf(UUID.randomUUID()), "-АWР.xls").getAbsolutePath();
         var existedFile = new File(xlsxFilePath);
@@ -113,6 +113,7 @@ public class FileService {
             setCellValue(sheet, 12, 5, contactNumber);
             setCellValue(sheet, 14, 33, docNumber);
             setCellValue(sheet, 14, 38, allData.get(allData.size() - 1).getDate());
+            setCellValue(sheet, 10, 4, performer);
 
 
             for (var rowData : allData) {
