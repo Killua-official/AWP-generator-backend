@@ -131,14 +131,14 @@ public class FileService {
                     if (templateCell != null) {
                         Cell cell = excelRow.createCell(i);
                         cell.setCellStyle(templateCell.getCellStyle());
-                        if (i == 0) { // Assuming column 0 is for the number
+                        if (i == 0) {
                             cell.setCellValue(number);
                             number++;
                         }
-                        if (i == 15) { // Assuming column 1 is for the merged date
+                        if (i == 15) {
                             cell.setCellValue(rowData.getDate());
                         }
-                        if (i == 2) { // Assuming column 2 is for the comment
+                        if (i == 2) {
                             cell.setCellValue(rowData.getComment()+ " (#" + rowData.getTaskID() + ")");
                         }
                         if (i == 29) {
@@ -151,7 +151,6 @@ public class FileService {
                             cell.setCellValue(salary);
                         }
                         if (i == 43) {
-                            //cell.setCellValue(salary * rowData.getCount()/100);
                             cell.setCellFormula("AG" + (20 + number - 2) + "*AL" + (20 + number - 2));
                         }
                     }
@@ -162,14 +161,13 @@ public class FileService {
             }
             Row excelRow = sheet.getRow(startRow);
             Cell cell = excelRow.getCell(32);
-            var totalCount = allData.stream().map(RedmineRow::getCount).reduce(0.0, Double::sum)/100.0;
-            cell.setCellValue(totalCount);
+            cell.setCellFormula("SUM(AG20:AK" + (20 + number - 2) + ")");
 
             cell = excelRow.getCell(37);
             cell.setCellValue(salary);
 
             cell = excelRow.getCell(43);
-            cell.setCellValue(totalCount * salary);
+            cell.setCellFormula("SUM(AR20:AW" + (20 + number - 2) + ")");
 
             try (FileOutputStream outputStream = new FileOutputStream(xlsxFilePath)) {
                 workbook.write(outputStream);
